@@ -1,8 +1,8 @@
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(ktorLibs.plugins.ktor)
+    id("org.jetbrains.kotlin.jvm") version "1.9.20"
     alias(libs.plugins.kotlin.serialization)
+    id("io.ktor.plugin") version "3.4.2"
 }
 
 group = "com.example"
@@ -29,7 +29,12 @@ dependencies {
     implementation(ktorLibs.server.resources)
     implementation(ktorLibs.server.statusPages)
     implementation(ktorLibs.server.websockets)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.hikari)
     implementation(libs.logback.classic)
+    implementation(libs.postgresql)
 
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)

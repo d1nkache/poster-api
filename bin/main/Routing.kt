@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.data.repository.ProfileRepositoryImpl
+import com.example.data.repository.ProfileRepositoryStub
 import com.example.domain.usecase.profile.GetProfileUseCase
 import com.example.domain.usecase.profile.UpdateProfileUseCase
 import com.example.domain.usecase.profile.UploadProfileAvatarUseCase
@@ -9,14 +9,12 @@ import com.example.presentation.router.profileRouter
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.http.content.staticFiles
 import io.ktor.server.resources.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
-import java.io.File
 
 fun Application.configureRouting() {
-    val profileRepository = ProfileRepositoryImpl()
+    val profileRepository = ProfileRepositoryStub()
     val profileController = ProfileController(
         getProfileUseCase = GetProfileUseCase(profileRepository),
         updateProfileUseCase = UpdateProfileUseCase(profileRepository),
@@ -24,7 +22,6 @@ fun Application.configureRouting() {
     )
 
     routing {
-        staticFiles("/media", File("media"))
         profileRouter(profileController)
 
         get("/") {
