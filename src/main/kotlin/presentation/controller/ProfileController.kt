@@ -8,7 +8,6 @@ import com.example.domain.usecase.profile.UploadProfileAvatarUseCase
 import com.example.presentation.mapper.ProfileMapper
 import com.example.presentation.request.UpdateProfileRequest
 import com.example.presentation.response.ProfileResponse
-import com.example.presentation.response.UpdateProfileResponse
 import com.example.presentation.response.UploadProfileAvatarResponse
 
 class ProfileController(
@@ -25,16 +24,18 @@ class ProfileController(
     suspend fun updateProfile(
         profileId: Long,
         request: UpdateProfileRequest
-    ): UpdateProfileResponse {
+    ): ProfileResponse {
         val profile = this.updateProfileUseCase(
             profileId,
             UpdateProfile(
+                name = request.name,
                 username = request.username,
-                bio = request.bio
+                bio = request.bio,
+                birthday = request.birthday
             )
         )
 
-        return ProfileMapper.asUpdateProfileResponse(profile)
+        return ProfileMapper.asProfileResponse(profile)
     }
 
     suspend fun uploadProfileAvatar(

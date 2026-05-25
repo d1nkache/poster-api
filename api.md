@@ -22,7 +22,7 @@
   "code": "VALIDATION_ERROR",
   "message": "Email is invalid",
   "details": {
-    "field": "email"п
+    "field": "email"
   }
 }
 ```

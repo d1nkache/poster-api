@@ -30,7 +30,7 @@ fun Route.profileRouter(profileController: ProfileController) {
         }
 
         get("/{userId}") {
-            val profileId = call.parameters["userId"]?.toLongOrNull()
+            val profileId = call.parameters["userId"]?.toProfileId()
                 ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid userId")
 
             call.respond(profileController.getProfile(profileId))
@@ -47,4 +47,8 @@ fun Route.profileRouter(profileController: ProfileController) {
             call.respond(profileController.uploadProfileAvatar(profileId, avatar))
         }
     }
+}
+
+private fun String.toProfileId(): Long? {
+    return removePrefix("user-").toLongOrNull()
 }

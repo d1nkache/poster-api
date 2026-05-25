@@ -4,8 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ProfileResponse(
-    val userId: Long,
+    val id: String,
+    val name: String,
     val username: String,
+    val email: String,
+    val birthday: String?,
     val bio: String?,
-    val avatarUrl: String
+    val avatarUrl: String,
+    val isOnline: Boolean
 )

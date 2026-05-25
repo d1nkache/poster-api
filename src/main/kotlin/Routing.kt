@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.data.dao.ProfileDao
 import com.example.data.repository.ProfileRepositoryImpl
 import com.example.domain.usecase.profile.GetProfileUseCase
 import com.example.domain.usecase.profile.UpdateProfileUseCase
@@ -16,7 +17,7 @@ import io.ktor.websocket.*
 import java.io.File
 
 fun Application.configureRouting() {
-    val profileRepository = ProfileRepositoryImpl()
+    val profileRepository = ProfileRepositoryImpl(profileDao = ProfileDao())
     val profileController = ProfileController(
         getProfileUseCase = GetProfileUseCase(profileRepository),
         updateProfileUseCase = UpdateProfileUseCase(profileRepository),
