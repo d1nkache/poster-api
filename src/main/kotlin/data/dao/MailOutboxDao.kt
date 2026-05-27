@@ -1,11 +1,17 @@
 package com.example.data.dao
 
+import com.example.data.database.table.ChatsTable
+import com.example.data.database.table.ContactsTable
 import com.example.data.database.table.MailOutboxTable
+import com.example.data.database.table.MessagesTable
+import com.example.data.database.table.ProfilesTable
+import com.example.data.database.table.SettingsTable
 import com.example.domain.model.MailOutboxStatus
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
@@ -38,6 +44,32 @@ class MailOutboxDao {
             .orderBy(MailOutboxTable.createdAt to SortOrder.ASC)
             .limit(limit)
             .map { it.toMailOutboxRecord() }
+    }
+
+    fun findPendingDetails(limit: Int): List<PendingOutgoingMailRecord> {
+        return MailOutboxTable
+            .innerJoin(MessagesTable)
+            .innerJoin(ChatsTable)
+            .innerJoin(ContactsTable)
+            .innerJoin(ProfilesTable)
+            .innerJoin(SettingsTable)
+            .selectAll()
+            .where {
+                MailOutboxTable.status eq MailOutboxStatus.PENDING.name
+            }
+            .orderBy(MailOutboxTable.createdAt to SortOrder.ASC)
+            .limit(limit)
+            .filter { it[SettingsTable.mailAccessToken] != null }
+            .map {
+                PendingOutgoingMailRecord(
+                    outboxId = it[MailOutboxTable.id],
+                    messageId = it[MessagesTable.id],
+                    fromEmail = it[ProfilesTable.email],
+                    toEmail = it[ContactsTable.email],
+                    bodyText = it[MessagesTable.bodyText],
+                    mailAccessToken = requireNotNull(it[SettingsTable.mailAccessToken])
+                )
+            }
     }
 
     fun markSent(id: Long): Boolean {
@@ -92,4 +124,13 @@ data class MailOutboxRecord(
     val createdAt: String,
     val updatedAt: String,
     val sentAt: String?
+)
+
+data class PendingOutgoingMailRecord(
+    val outboxId: Long,
+    val messageId: Long,
+    val fromEmail: String,
+    val toEmail: String,
+    val bodyText: String,
+    val mailAccessToken: String
 )

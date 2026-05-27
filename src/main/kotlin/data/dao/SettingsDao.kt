@@ -1,5 +1,6 @@
 package com.example.data.dao
 
+import com.example.data.database.table.ProfilesTable
 import com.example.data.database.table.SettingsTable
 import com.example.domain.model.UpdateSettings
 import org.jetbrains.exposed.sql.ResultRow
@@ -44,11 +45,17 @@ class SettingsDao {
         SettingsTable.update({ SettingsTable.userId eq userId }) { statement ->
             statement[mailAccessToken] = token
         }
+        ProfilesTable.update({ ProfilesTable.userId eq userId }) { statement ->
+            statement[mailSyncEnabled] = true
+        }
     }
 
     fun deleteMailAccessToken(userId: Long) {
         SettingsTable.update({ SettingsTable.userId eq userId }) { statement ->
             statement[mailAccessToken] = null
+        }
+        ProfilesTable.update({ ProfilesTable.userId eq userId }) { statement ->
+            statement[mailSyncEnabled] = false
         }
     }
 

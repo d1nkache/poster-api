@@ -12,6 +12,13 @@ application {
     mainClass = "io.ktor.server.netty.EngineMain"
 }
 
+tasks.register<JavaExec>("runMailWorker") {
+    group = "application"
+    description = "Runs the poster mail worker process."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.example.worker.MailWorkerMainKt")
+}
+
 kotlin {
     jvmToolchain(21)
 }
@@ -33,6 +40,7 @@ dependencies {
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.hikari)
+    implementation(libs.jakarta.mail)
     implementation(libs.logback.classic)
     implementation(libs.postgresql)
 

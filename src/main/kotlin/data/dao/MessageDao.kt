@@ -103,6 +103,40 @@ class MessageDao {
         return findByIdForWorker(messageId) ?: error("Created incoming message was not found")
     }
 
+    fun existsIncoming(
+        chatId: Long,
+        imapUid: Long?,
+        providerMessageId: String?
+    ): Boolean {
+        val byUid = imapUid?.let { uid ->
+            MessagesTable
+                .selectAll()
+                .where {
+                    (MessagesTable.chatId eq chatId) and
+                        (MessagesTable.imapUid eq uid) and
+                        (MessagesTable.isDeleted eq false)
+                }
+                .limit(1)
+                .any()
+        } ?: false
+
+        if (byUid) {
+            return true
+        }
+
+        return providerMessageId?.let { messageId ->
+            MessagesTable
+                .selectAll()
+                .where {
+                    (MessagesTable.chatId eq chatId) and
+                        (MessagesTable.providerMessageId eq messageId) and
+                        (MessagesTable.isDeleted eq false)
+                }
+                .limit(1)
+                .any()
+        } ?: false
+    }
+
     fun markSentForWorker(messageId: Long): Boolean {
         val now = Instant.now().toString()
         return MessagesTable.update({ MessagesTable.id eq messageId }) { statement ->

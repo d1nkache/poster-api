@@ -48,6 +48,30 @@ class ContactDao {
             ?.toContactRecord()
     }
 
+    fun findByEmail(profileId: Long, email: String): ContactRecord? {
+        return ContactsTable
+            .selectAll()
+            .where { (ContactsTable.profileId eq profileId) and (ContactsTable.email eq email) }
+            .singleOrNull()
+            ?.toContactRecord()
+    }
+
+    fun findOrCreateByEmail(
+        profileId: Long,
+        email: String,
+        displayName: String?
+    ): ContactRecord {
+        findByEmail(profileId, email)?.let { return it }
+
+        return create(
+            profileId = profileId,
+            createContact = CreateContact(
+                email = email,
+                displayName = displayName
+            )
+        )
+    }
+
     fun create(
         profileId: Long,
         createContact: CreateContact
