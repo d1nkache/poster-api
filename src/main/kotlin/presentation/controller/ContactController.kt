@@ -1,7 +1,5 @@
 package com.example.presentation.controller
 
-import com.example.domain.model.CreateContact
-import com.example.domain.model.UpdateContact
 import com.example.domain.usecase.contact.CreateContactUseCase
 import com.example.domain.usecase.contact.DeleteContactUseCase
 import com.example.domain.usecase.contact.GetContactUseCase
@@ -11,6 +9,8 @@ import com.example.domain.usecase.contact.UpdateContactUseCase
 import com.example.presentation.mapper.ContactMapper
 import com.example.presentation.request.CreateContactRequest
 import com.example.presentation.request.UpdateContactRequest
+import com.example.presentation.request.toCreateContact
+import com.example.presentation.request.toUpdateContact
 import com.example.presentation.response.ChatResponse
 import com.example.presentation.response.ContactListResponse
 import com.example.presentation.response.ContactResponse
@@ -47,10 +47,7 @@ class ContactController(
     ): ContactResponse {
         val contact = createContactUseCase(
             profileId,
-            CreateContact(
-                email = request.email,
-                displayName = request.displayName
-            )
+            request.toCreateContact()
         )
 
         return ContactMapper.asContactResponse(contact)
@@ -64,10 +61,7 @@ class ContactController(
         val contact = updateContactUseCase(
             profileId,
             contactId,
-            UpdateContact(
-                displayName = request.displayName,
-                avatarUrl = request.avatarUrl
-            )
+            request.toUpdateContact()
         ) ?: return null
 
         return ContactMapper.asContactResponse(contact)

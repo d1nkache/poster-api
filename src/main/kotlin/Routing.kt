@@ -2,10 +2,12 @@ package com.example
 
 import com.example.data.dao.ChatDao
 import com.example.data.dao.ContactDao
+import com.example.data.dao.MessageDao
 import com.example.data.dao.ProfileDao
 import com.example.data.dao.SettingsDao
 import com.example.data.repository.ChatRepositoryImpl
 import com.example.data.repository.ContactRepositoryImpl
+import com.example.data.repository.MessageRepositoryImpl
 import com.example.data.repository.ProfileRepositoryImpl
 import com.example.data.repository.SettingsRepositoryImpl
 import com.example.domain.usecase.contact.CreateContactUseCase
@@ -14,6 +16,12 @@ import com.example.domain.usecase.contact.GetContactUseCase
 import com.example.domain.usecase.contact.GetContactsUseCase
 import com.example.domain.usecase.contact.GetOrCreateContactChatUseCase
 import com.example.domain.usecase.contact.UpdateContactUseCase
+import com.example.domain.usecase.message.DeleteMessageUseCase
+import com.example.domain.usecase.message.GetChatMessagesUseCase
+import com.example.domain.usecase.message.GetMessageUseCase
+import com.example.domain.usecase.message.MarkChatMessagesAsReadUseCase
+import com.example.domain.usecase.message.MarkMessageAsReadUseCase
+import com.example.domain.usecase.message.SendMessageUseCase
 import com.example.domain.usecase.profile.GetProfileUseCase
 import com.example.domain.usecase.profile.UpdateProfileUseCase
 import com.example.domain.usecase.profile.UploadProfileAvatarUseCase
@@ -23,9 +31,11 @@ import com.example.domain.usecase.settings.GetSettingsUseCase
 import com.example.domain.usecase.settings.SaveMailAccessTokenUseCase
 import com.example.domain.usecase.settings.UpdateSettingsUseCase
 import com.example.presentation.controller.ContactController
+import com.example.presentation.controller.MessageController
 import com.example.presentation.controller.ProfileController
 import com.example.presentation.controller.SettingsController
 import com.example.presentation.router.contactRouter
+import com.example.presentation.router.messageRouter
 import com.example.presentation.router.profileRouter
 import com.example.presentation.router.settingsRouter
 import io.ktor.server.application.*
@@ -42,6 +52,8 @@ fun Application.configureRouting() {
     val settingsDao = SettingsDao()
     val contactDao = ContactDao()
     val chatDao = ChatDao()
+    val messageDao = MessageDao()
+
     val profileRepository = ProfileRepositoryImpl(profileDao = profileDao)
     val settingsRepository = SettingsRepositoryImpl(
         settingsDao = settingsDao,
@@ -55,6 +67,11 @@ fun Application.configureRouting() {
         chatDao = chatDao,
         contactDao = contactDao,
         profileDao = profileDao
+    )
+    val messageRepository = MessageRepositoryImpl(
+        messageDao = messageDao,
+        chatDao = chatDao,
+        contactDao = contactDao
     )
     val profileController = ProfileController(
         getProfileUseCase = GetProfileUseCase(profileRepository),
@@ -76,12 +93,21 @@ fun Application.configureRouting() {
         deleteContactUseCase = DeleteContactUseCase(contactRepository),
         getOrCreateContactChatUseCase = GetOrCreateContactChatUseCase(chatRepository)
     )
+    val messageController = MessageController(
+        getChatMessagesUseCase = GetChatMessagesUseCase(messageRepository),
+        sendMessageUseCase = SendMessageUseCase(messageRepository),
+        getMessageUseCase = GetMessageUseCase(messageRepository),
+        markMessageAsReadUseCase = MarkMessageAsReadUseCase(messageRepository),
+        markChatMessagesAsReadUseCase = MarkChatMessagesAsReadUseCase(messageRepository),
+        deleteMessageUseCase = DeleteMessageUseCase(messageRepository)
+    )
 
     routing {
         staticFiles("/media", File("media"))
         profileRouter(profileController)
         settingsRouter(settingsController)
         contactRouter(contactController)
+        messageRouter(messageController)
 
         get("/") {
             call.respondText("Hello, World!")
