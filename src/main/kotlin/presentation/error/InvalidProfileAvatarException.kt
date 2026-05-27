@@ -3,6 +3,7 @@ package com.example.presentation.error
 import io.ktor.http.HttpStatusCode
 
 class InvalidProfileAvatarException(
-    val statusCode: HttpStatusCode,
+    statusCode: HttpStatusCode,
+    code: String,
     override val message: String
-) : RuntimeException(message)
+) : ApiException(statusCode, code, message)

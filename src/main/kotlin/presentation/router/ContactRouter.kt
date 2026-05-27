@@ -2,6 +2,8 @@ package com.example.presentation.router
 
 import com.example.presentation.auth.currentProfileId
 import com.example.presentation.controller.ContactController
+import com.example.presentation.error.badRequest
+import com.example.presentation.error.notFound
 import com.example.presentation.request.CreateContactRequest
 import com.example.presentation.request.UpdateContactRequest
 import io.ktor.http.HttpStatusCode
@@ -26,9 +28,9 @@ fun Route.contactRouter(contactController: ContactController) {
         get("/{contactId}") {
             val profileId = call.currentProfileId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
-                ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid contactId")
+                ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
             val contact = contactController.getContact(profileId, contactId)
-                ?: return@get call.respond(HttpStatusCode.NotFound, "Contact not found")
+                ?: notFound("CONTACT_NOT_FOUND", "Contact not found")
 
             call.respond(contact)
         }
@@ -43,10 +45,10 @@ fun Route.contactRouter(contactController: ContactController) {
         patch("/{contactId}") {
             val profileId = call.currentProfileId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
-                ?: return@patch call.respond(HttpStatusCode.BadRequest, "Invalid contactId")
+                ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
             val request = call.receive<UpdateContactRequest>()
             val contact = contactController.updateContact(profileId, contactId, request)
-                ?: return@patch call.respond(HttpStatusCode.NotFound, "Contact not found")
+                ?: notFound("CONTACT_NOT_FOUND", "Contact not found")
 
             call.respond(contact)
         }
@@ -54,10 +56,10 @@ fun Route.contactRouter(contactController: ContactController) {
         delete("/{contactId}") {
             val profileId = call.currentProfileId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
-                ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid contactId")
+                ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
 
             if (!contactController.deleteContact(profileId, contactId)) {
-                return@delete call.respond(HttpStatusCode.NotFound, "Contact not found")
+                notFound("CONTACT_NOT_FOUND", "Contact not found")
             }
 
             call.respond(HttpStatusCode.NoContent)
@@ -66,9 +68,9 @@ fun Route.contactRouter(contactController: ContactController) {
         post("/{contactId}/chat") {
             val profileId = call.currentProfileId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
-                ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid contactId")
+                ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
             val chat = contactController.getOrCreateChat(profileId, contactId)
-                ?: return@post call.respond(HttpStatusCode.NotFound, "Contact not found")
+                ?: notFound("CONTACT_NOT_FOUND", "Contact not found")
 
             call.respond(chat)
         }

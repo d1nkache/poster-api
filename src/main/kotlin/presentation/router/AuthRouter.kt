@@ -2,6 +2,9 @@ package com.example.presentation.router
 
 import com.example.presentation.auth.currentProfileId
 import com.example.presentation.controller.AuthController
+import com.example.presentation.error.conflict
+import com.example.presentation.error.badRequest
+import com.example.presentation.error.unauthorized
 import com.example.presentation.request.LoginRequest
 import com.example.presentation.request.RefreshRequest
 import com.example.presentation.request.RegisterRequest
@@ -21,7 +24,7 @@ fun Route.authRouter(authController: AuthController) {
             val request = call.receive<RegisterRequest>()
             val registered = authController.register(request)
             if (!registered) {
-                return@post call.respond(HttpStatusCode.Conflict, "Email already registered")
+                conflict("EMAIL_ALREADY_REGISTERED", "Email already registered")
             }
 
             call.respond(HttpStatusCode.Created, RegisterResponse(message = "OTP code sent"))
@@ -30,7 +33,7 @@ fun Route.authRouter(authController: AuthController) {
         post("/verify-otp") {
             val request = call.receive<VerifyOtpRequest>()
             val response = authController.verifyOtp(request)
-                ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid OTP")
+                ?: badRequest("INVALID_OTP", "Invalid OTP")
 
             call.respond(response)
         }
@@ -38,7 +41,7 @@ fun Route.authRouter(authController: AuthController) {
         post("/login") {
             val request = call.receive<LoginRequest>()
             val response = authController.login(request)
-                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid credentials or email is not verified")
+                ?: unauthorized("INVALID_CREDENTIALS", "Invalid credentials or email is not verified")
 
             call.respond(response)
         }
@@ -46,7 +49,7 @@ fun Route.authRouter(authController: AuthController) {
         post("/refresh") {
             val request = call.receive<RefreshRequest>()
             val response = authController.refresh(request)
-                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid refresh token")
+                ?: unauthorized("INVALID_REFRESH_TOKEN", "Invalid refresh token")
 
             call.respond(response)
         }

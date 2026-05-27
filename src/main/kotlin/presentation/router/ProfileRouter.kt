@@ -2,10 +2,9 @@ package com.example.presentation.router
 
 import com.example.presentation.auth.currentProfileId
 import com.example.presentation.controller.ProfileController
-import com.example.presentation.error.InvalidProfileAvatarException
+import com.example.presentation.error.badRequest
 import com.example.presentation.request.UpdateProfileRequest
 import com.example.presentation.request.receiveProfileAvatar
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -31,18 +30,14 @@ fun Route.profileRouter(profileController: ProfileController) {
 
         get("/{userId}") {
             val profileId = call.parameters["userId"]?.toProfileId()
-                ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid userId")
+                ?: badRequest("INVALID_USER_ID", "Invalid userId")
 
             call.respond(profileController.getProfile(profileId))
         }
 
         post("/avatar") {
             val profileId = call.currentProfileId()
-            val avatar = try {
-                call.receiveProfileAvatar()
-            } catch (exception: InvalidProfileAvatarException) {
-                return@post call.respond(exception.statusCode, exception.message)
-            }
+            val avatar = call.receiveProfileAvatar()
 
             call.respond(profileController.uploadProfileAvatar(profileId, avatar))
         }

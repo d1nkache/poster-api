@@ -2,6 +2,8 @@ package com.example.presentation.router
 
 import com.example.presentation.auth.currentProfileId
 import com.example.presentation.controller.MessageController
+import com.example.presentation.error.badRequest
+import com.example.presentation.error.notFound
 import com.example.presentation.request.SendMessageRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -16,11 +18,11 @@ fun Route.messageRouter(messageController: MessageController) {
     get("/chats/{chatId}/messages") {
         val profileId = call.currentProfileId()
         val chatId = call.parameters["chatId"]?.toLongOrNull()
-            ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid chatId")
+            ?: badRequest("INVALID_CHAT_ID", "Invalid chatId")
         val limit = call.request.queryParameters["limit"]?.toIntOrNull()?.coerceIn(1, 100) ?: 50
         val offset = call.request.queryParameters["offset"]?.toLongOrNull()?.takeIf { it >= 0 } ?: 0
         val messages = messageController.getChatMessages(profileId, chatId, limit, offset)
-            ?: return@get call.respond(HttpStatusCode.NotFound, "Chat not found")
+            ?: notFound("CHAT_NOT_FOUND", "Chat not found")
 
         call.respond(messages)
     }
@@ -28,10 +30,10 @@ fun Route.messageRouter(messageController: MessageController) {
     post("/chats/{chatId}/messages") {
         val profileId = call.currentProfileId()
         val chatId = call.parameters["chatId"]?.toLongOrNull()
-            ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid chatId")
+            ?: badRequest("INVALID_CHAT_ID", "Invalid chatId")
         val request = call.receive<SendMessageRequest>()
         val message = messageController.sendMessage(profileId, chatId, request)
-            ?: return@post call.respond(HttpStatusCode.NotFound, "Chat not found")
+            ?: notFound("CHAT_NOT_FOUND", "Chat not found")
 
         call.respond(HttpStatusCode.Created, message)
     }
@@ -39,9 +41,9 @@ fun Route.messageRouter(messageController: MessageController) {
     get("/messages/{messageId}") {
         val profileId = call.currentProfileId()
         val messageId = call.parameters["messageId"]?.toLongOrNull()
-            ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid messageId")
+            ?: badRequest("INVALID_MESSAGE_ID", "Invalid messageId")
         val message = messageController.getMessage(profileId, messageId)
-            ?: return@get call.respond(HttpStatusCode.NotFound, "Message not found")
+            ?: notFound("MESSAGE_NOT_FOUND", "Message not found")
 
         call.respond(message)
     }
@@ -49,10 +51,10 @@ fun Route.messageRouter(messageController: MessageController) {
     patch("/messages/{messageId}/read") {
         val profileId = call.currentProfileId()
         val messageId = call.parameters["messageId"]?.toLongOrNull()
-            ?: return@patch call.respond(HttpStatusCode.BadRequest, "Invalid messageId")
+            ?: badRequest("INVALID_MESSAGE_ID", "Invalid messageId")
 
         if (!messageController.markMessageAsRead(profileId, messageId)) {
-            return@patch call.respond(HttpStatusCode.NotFound, "Message not found")
+            notFound("MESSAGE_NOT_FOUND", "Message not found")
         }
 
         call.respond(HttpStatusCode.NoContent)
@@ -61,10 +63,10 @@ fun Route.messageRouter(messageController: MessageController) {
     patch("/chats/{chatId}/messages/read") {
         val profileId = call.currentProfileId()
         val chatId = call.parameters["chatId"]?.toLongOrNull()
-            ?: return@patch call.respond(HttpStatusCode.BadRequest, "Invalid chatId")
+            ?: badRequest("INVALID_CHAT_ID", "Invalid chatId")
 
         if (!messageController.markChatMessagesAsRead(profileId, chatId)) {
-            return@patch call.respond(HttpStatusCode.NotFound, "Chat not found")
+            notFound("CHAT_NOT_FOUND", "Chat not found")
         }
 
         call.respond(HttpStatusCode.NoContent)
@@ -73,10 +75,10 @@ fun Route.messageRouter(messageController: MessageController) {
     delete("/messages/{messageId}") {
         val profileId = call.currentProfileId()
         val messageId = call.parameters["messageId"]?.toLongOrNull()
-            ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid messageId")
+            ?: badRequest("INVALID_MESSAGE_ID", "Invalid messageId")
 
         if (!messageController.deleteMessage(profileId, messageId)) {
-            return@delete call.respond(HttpStatusCode.NotFound, "Message not found")
+            notFound("MESSAGE_NOT_FOUND", "Message not found")
         }
 
         call.respond(HttpStatusCode.NoContent)

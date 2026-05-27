@@ -38,12 +38,14 @@ suspend fun ApplicationCall.receiveProfileAvatar(): ToUpload {
                 val contentType = part.contentType?.toString()
                     ?: throw InvalidProfileAvatarException(
                         HttpStatusCode.BadRequest,
+                        "AVATAR_CONTENT_TYPE_REQUIRED",
                         "Avatar content type is required"
                     )
 
                 if (contentType != "image/png") {
                     throw InvalidProfileAvatarException(
                         HttpStatusCode.UnsupportedMediaType,
+                        "UNSUPPORTED_AVATAR_TYPE",
                         "Avatar must be image/png"
                     )
                 }
@@ -60,6 +62,7 @@ suspend fun ApplicationCall.receiveProfileAvatar(): ToUpload {
 
     return avatar ?: throw InvalidProfileAvatarException(
         HttpStatusCode.BadRequest,
+        "AVATAR_FIELD_REQUIRED",
         "Multipart field avatar is required"
     )
 }
