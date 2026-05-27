@@ -8,7 +8,11 @@ object SettingsMapper {
     fun asSettingsResponse(settings: SettingsEntity): SettingsResponse {
         return SettingsResponse(
             language = settings.language,
-            hasMailAccessToken = settings.hasMailAccessToken
+            hasMailAccessToken = settings.hasMailAccessToken,
+            smtpHost = settings.smtpHost,
+            smtpPort = settings.smtpPort,
+            imapHost = settings.imapHost,
+            imapPort = settings.imapPort
         )
     }
 

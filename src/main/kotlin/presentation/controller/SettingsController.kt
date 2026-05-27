@@ -1,5 +1,6 @@
 package com.example.presentation.controller
 
+import com.example.domain.model.MailConnectionSettings
 import com.example.domain.model.UpdateSettings
 import com.example.domain.usecase.settings.DeleteMailAccessTokenUseCase
 import com.example.domain.usecase.settings.GetMailAccessTokenStatusUseCase
@@ -41,7 +42,16 @@ class SettingsController(
         userId: Long,
         request: SaveMailAccessTokenRequest
     ) {
-        saveMailAccessTokenUseCase(userId, request.token)
+        saveMailAccessTokenUseCase(
+            userId,
+            MailConnectionSettings(
+                token = request.token,
+                smtpHost = request.smtpHost,
+                smtpPort = request.smtpPort,
+                imapHost = request.imapHost,
+                imapPort = request.imapPort
+            )
+        )
     }
 
     suspend fun deleteMailAccessToken(userId: Long) {

@@ -1,5 +1,6 @@
 package com.example.domain.repository
 
+ import com.example.domain.model.MailConnectionSettings
 import com.example.domain.model.SettingsEntity
 import com.example.domain.model.UpdateSettings
 
@@ -13,7 +14,7 @@ interface SettingsRepository {
 
     suspend fun saveMailAccessToken(
         userId: Long,
-        token: String
+        mailConnectionSettings: MailConnectionSettings
     )
 
     suspend fun deleteMailAccessToken(userId: Long)

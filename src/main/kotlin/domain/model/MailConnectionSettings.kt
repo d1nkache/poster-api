@@ -1,9 +1,7 @@
 package com.example.domain.model
 
-data class SettingsEntity(
-    val userId: Long,
-    val language: String,
-    val hasMailAccessToken: Boolean,
+data class MailConnectionSettings(
+    val token: String,
     val smtpHost: String?,
     val smtpPort: Int?,
     val imapHost: String?,

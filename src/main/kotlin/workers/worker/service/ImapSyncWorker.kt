@@ -38,9 +38,10 @@ class ImapSyncWorker(
     }
 
     private suspend fun syncProfile(profile: ProfileRecord) {
-        val token = dbQuery {
-            settingsDao.findByUserId(profile.userId)?.mailAccessToken
+        val settings = dbQuery {
+            settingsDao.findByUserId(profile.userId)
         } ?: return
+        val token = settings.mailAccessToken ?: return
 
         try {
             dbQuery {
@@ -48,7 +49,14 @@ class ImapSyncWorker(
             }
 
             val accessToken = tokenCipher.decrypt(token)
-            val mailSettings = providerResolver.resolve(profile.email, accessToken)
+            val mailSettings = providerResolver.resolve(
+                email = profile.email,
+                accessToken = accessToken,
+                smtpHost = settings.smtpHost,
+                smtpPort = settings.smtpPort,
+                imapHost = settings.imapHost,
+                imapPort = settings.imapPort
+            )
             val incomingMessages = imapMailClient.fetchNewMessages(mailSettings, profile.lastUid)
             val maxUid = incomingMessages.mapNotNull { it.uid }.maxOrNull()
 

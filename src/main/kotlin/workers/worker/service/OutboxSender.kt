@@ -35,7 +35,14 @@ class OutboxSender(
         for (outbox in pending) {
             try {
                 val accessToken = tokenCipher.decrypt(outbox.mailAccessToken)
-                val mailSettings = providerResolver.resolve(outbox.fromEmail, accessToken)
+                val mailSettings = providerResolver.resolve(
+                    email = outbox.fromEmail,
+                    accessToken = accessToken,
+                    smtpHost = outbox.smtpHost,
+                    smtpPort = outbox.smtpPort,
+                    imapHost = outbox.imapHost,
+                    imapPort = outbox.imapPort
+                )
                 smtpMailClient.send(
                     settings = mailSettings,
                     mail = OutgoingMail(

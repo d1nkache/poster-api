@@ -67,7 +67,11 @@ class MailOutboxDao {
                     fromEmail = it[ProfilesTable.email],
                     toEmail = it[ContactsTable.email],
                     bodyText = it[MessagesTable.bodyText],
-                    mailAccessToken = requireNotNull(it[SettingsTable.mailAccessToken])
+                    mailAccessToken = requireNotNull(it[SettingsTable.mailAccessToken]),
+                    smtpHost = it[SettingsTable.smtpHost],
+                    smtpPort = it[SettingsTable.smtpPort],
+                    imapHost = it[SettingsTable.imapHost],
+                    imapPort = it[SettingsTable.imapPort]
                 )
             }
     }
@@ -132,5 +136,9 @@ data class PendingOutgoingMailRecord(
     val fromEmail: String,
     val toEmail: String,
     val bodyText: String,
-    val mailAccessToken: String
+    val mailAccessToken: String,
+    val smtpHost: String?,
+    val smtpPort: Int?,
+    val imapHost: String?,
+    val imapPort: Int?
 )
