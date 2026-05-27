@@ -78,6 +78,45 @@ class MessageDao {
         return findById(profileId, messageId)
     }
 
+    fun createIncoming(
+        chatId: Long,
+        bodyText: String,
+        imapUid: Long?,
+        providerMessageId: String?,
+        receivedAt: String
+    ): MessageRecord {
+        val now = Instant.now().toString()
+        val messageId = MessagesTable.insert { statement ->
+            statement[MessagesTable.chatId] = chatId
+            statement[MessagesTable.bodyText] = bodyText
+            statement[direction] = MessageDirection.INCOMING.name
+            statement[status] = MessageStatus.RECEIVED.name
+            statement[isRead] = false
+            statement[isDeleted] = false
+            statement[MessagesTable.imapUid] = imapUid
+            statement[MessagesTable.providerMessageId] = providerMessageId
+            statement[createdAt] = now
+            statement[sentAt] = null
+            statement[MessagesTable.receivedAt] = receivedAt
+        } get MessagesTable.id
+
+        return findByIdForWorker(messageId) ?: error("Created incoming message was not found")
+    }
+
+    fun markSentForWorker(messageId: Long): Boolean {
+        val now = Instant.now().toString()
+        return MessagesTable.update({ MessagesTable.id eq messageId }) { statement ->
+            statement[status] = MessageStatus.SENT.name
+            statement[sentAt] = now
+        } > 0
+    }
+
+    fun markFailedForWorker(messageId: Long): Boolean {
+        return MessagesTable.update({ MessagesTable.id eq messageId }) { statement ->
+            statement[status] = MessageStatus.FAILED.name
+        } > 0
+    }
+
     fun findById(
         profileId: Long,
         messageId: Long
@@ -134,6 +173,14 @@ class MessageDao {
         return MessagesTable.update({ MessagesTable.id eq message.id }) { statement ->
             statement[isDeleted] = true
         } > 0
+    }
+
+    private fun findByIdForWorker(messageId: Long): MessageRecord? {
+        return MessagesTable
+            .selectAll()
+            .where { (MessagesTable.id eq messageId) and (MessagesTable.isDeleted eq false) }
+            .singleOrNull()
+            ?.toMessageRecord()
     }
 
     private fun ResultRow.toMessageRecord(): MessageRecord {

@@ -2,6 +2,7 @@ package com.example.data.repository
 
 import com.example.data.dao.ChatDao
 import com.example.data.dao.ContactDao
+import com.example.data.dao.MailOutboxDao
 import com.example.data.dao.MessageDao
 import com.example.data.dao.MessageRecord
 import com.example.domain.model.MessageEntity
@@ -13,6 +14,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class MessageRepositoryImpl(
     private val messageDao: MessageDao,
+    private val mailOutboxDao: MailOutboxDao,
     private val chatDao: ChatDao,
     private val contactDao: ContactDao
 ) : MessageRepository {
@@ -34,7 +36,10 @@ class MessageRepositoryImpl(
     ): MessageEntity? = dbQuery {
         ensureTables()
 
-        messageDao.createOutgoing(profileId, chatId, sendMessage)?.toMessageEntity()
+        val message = messageDao.createOutgoing(profileId, chatId, sendMessage) ?: return@dbQuery null
+        mailOutboxDao.createPending(message.id)
+
+        message.toMessageEntity()
     }
 
     override suspend fun getMessage(
@@ -77,6 +82,7 @@ class MessageRepositoryImpl(
         contactDao.ensureTable()
         chatDao.ensureTable()
         messageDao.ensureTable()
+        mailOutboxDao.ensureTable()
     }
 
     private fun MessageRecord.toMessageEntity(): MessageEntity {

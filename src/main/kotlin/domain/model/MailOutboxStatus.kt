@@ -1,10 +1,7 @@
 package com.example.domain.model
 
-enum class MessageStatus {
+enum class MailOutboxStatus {
     PENDING,
     SENT,
-    RECEIVED,
-    DELIVERED,
-    READ,
     FAILED
 }

@@ -2,6 +2,7 @@ package com.example
 
 import com.example.data.dao.ChatDao
 import com.example.data.dao.ContactDao
+import com.example.data.dao.MailOutboxDao
 import com.example.data.dao.MessageDao
 import com.example.data.dao.ProfileDao
 import com.example.data.dao.SettingsDao
@@ -53,6 +54,7 @@ fun Application.configureRouting() {
     val contactDao = ContactDao()
     val chatDao = ChatDao()
     val messageDao = MessageDao()
+    val mailOutboxDao = MailOutboxDao()
 
     val profileRepository = ProfileRepositoryImpl(profileDao = profileDao)
     val settingsRepository = SettingsRepositoryImpl(
@@ -70,6 +72,7 @@ fun Application.configureRouting() {
     )
     val messageRepository = MessageRepositoryImpl(
         messageDao = messageDao,
+        mailOutboxDao = mailOutboxDao,
         chatDao = chatDao,
         contactDao = contactDao
     )
