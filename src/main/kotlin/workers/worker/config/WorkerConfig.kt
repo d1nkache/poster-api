@@ -4,8 +4,11 @@ data class WorkerConfig(
     val database: DatabaseConfig,
     val outboxBatchSize: Int,
     val outboxDelayMs: Long,
+    val otpBatchSize: Int,
+    val otpDelayMs: Long,
     val imapDelayMs: Long,
-    val mail: MailDefaults
+    val mail: MailDefaults,
+    val authMail: AuthMailConfig
 ) {
     companion object {
         fun fromEnvironment(): WorkerConfig {
@@ -13,8 +16,11 @@ data class WorkerConfig(
                 database = DatabaseConfig.fromEnvironment(),
                 outboxBatchSize = envInt("WORKER_OUTBOX_BATCH_SIZE", 25),
                 outboxDelayMs = envLong("WORKER_OUTBOX_DELAY_MS", 5_000),
+                otpBatchSize = envInt("WORKER_OTP_BATCH_SIZE", 25),
+                otpDelayMs = envLong("WORKER_OTP_DELAY_MS", 5_000),
                 imapDelayMs = envLong("WORKER_IMAP_DELAY_MS", 30_000),
-                mail = MailDefaults.fromEnvironment()
+                mail = MailDefaults.fromEnvironment(),
+                authMail = AuthMailConfig.fromEnvironment()
             )
         }
     }
@@ -55,6 +61,34 @@ data class MailDefaults(
                 imapPort = System.getenv("POSTER_IMAP_PORT")?.toIntOrNull()
             )
         }
+    }
+}
+
+data class AuthMailConfig(
+    val fromEmail: String,
+    val username: String,
+    val password: String,
+    val smtpHost: String,
+    val smtpPort: Int
+) {
+    companion object {
+        fun fromEnvironment(): AuthMailConfig {
+            val username = env("POSTER_AUTH_SMTP_USERNAME", "")
+            return AuthMailConfig(
+                fromEmail = env("POSTER_AUTH_SMTP_FROM", username),
+                username = username,
+                password = env("POSTER_AUTH_SMTP_PASSWORD", ""),
+                smtpHost = env("POSTER_AUTH_SMTP_HOST", ""),
+                smtpPort = envInt("POSTER_AUTH_SMTP_PORT", 587)
+            )
+        }
+    }
+
+    fun validate() {
+        require(fromEmail.isNotBlank()) { "POSTER_AUTH_SMTP_FROM or POSTER_AUTH_SMTP_USERNAME is required" }
+        require(username.isNotBlank()) { "POSTER_AUTH_SMTP_USERNAME is required" }
+        require(password.isNotBlank()) { "POSTER_AUTH_SMTP_PASSWORD is required" }
+        require(smtpHost.isNotBlank()) { "POSTER_AUTH_SMTP_HOST is required" }
     }
 }
 

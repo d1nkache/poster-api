@@ -1,6 +1,6 @@
 package com.example.presentation.router
 
-import com.example.presentation.auth.currentProfileId
+import com.example.presentation.auth.currentUserId
 import com.example.presentation.controller.MessageController
 import com.example.presentation.error.badRequest
 import com.example.presentation.error.notFound
@@ -16,7 +16,7 @@ import io.ktor.server.routing.post
 
 fun Route.messageRouter(messageController: MessageController) {
     get("/chats/{chatId}/messages") {
-        val profileId = call.currentProfileId()
+        val profileId = call.currentUserId()
         val chatId = call.parameters["chatId"]?.toLongOrNull()
             ?: badRequest("INVALID_CHAT_ID", "Invalid chatId")
         val limit = call.request.queryParameters["limit"]?.toIntOrNull()?.coerceIn(1, 100) ?: 50
@@ -28,7 +28,7 @@ fun Route.messageRouter(messageController: MessageController) {
     }
 
     post("/chats/{chatId}/messages") {
-        val profileId = call.currentProfileId()
+        val profileId = call.currentUserId()
         val chatId = call.parameters["chatId"]?.toLongOrNull()
             ?: badRequest("INVALID_CHAT_ID", "Invalid chatId")
         val request = call.receive<SendMessageRequest>()
@@ -39,7 +39,7 @@ fun Route.messageRouter(messageController: MessageController) {
     }
 
     get("/messages/{messageId}") {
-        val profileId = call.currentProfileId()
+        val profileId = call.currentUserId()
         val messageId = call.parameters["messageId"]?.toLongOrNull()
             ?: badRequest("INVALID_MESSAGE_ID", "Invalid messageId")
         val message = messageController.getMessage(profileId, messageId)
@@ -49,7 +49,7 @@ fun Route.messageRouter(messageController: MessageController) {
     }
 
     patch("/messages/{messageId}/read") {
-        val profileId = call.currentProfileId()
+        val profileId = call.currentUserId()
         val messageId = call.parameters["messageId"]?.toLongOrNull()
             ?: badRequest("INVALID_MESSAGE_ID", "Invalid messageId")
 
@@ -61,7 +61,7 @@ fun Route.messageRouter(messageController: MessageController) {
     }
 
     patch("/chats/{chatId}/messages/read") {
-        val profileId = call.currentProfileId()
+        val profileId = call.currentUserId()
         val chatId = call.parameters["chatId"]?.toLongOrNull()
             ?: badRequest("INVALID_CHAT_ID", "Invalid chatId")
 
@@ -73,7 +73,7 @@ fun Route.messageRouter(messageController: MessageController) {
     }
 
     delete("/messages/{messageId}") {
-        val profileId = call.currentProfileId()
+        val profileId = call.currentUserId()
         val messageId = call.parameters["messageId"]?.toLongOrNull()
             ?: badRequest("INVALID_MESSAGE_ID", "Invalid messageId")
 

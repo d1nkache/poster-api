@@ -16,7 +16,14 @@ tasks.register<JavaExec>("runMailWorker") {
     group = "application"
     description = "Runs the poster mail worker process."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("com.example.worker.MailWorkerMainKt")
+    mainClass.set("com.example.workers.worker.MailWorkerMainKt")
+}
+
+tasks.register<JavaExec>("runOtpWorker") {
+    group = "application"
+    description = "Runs the poster OTP verification mail worker process."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.example.workers.worker.OtpWorkerMainKt")
 }
 
 kotlin {

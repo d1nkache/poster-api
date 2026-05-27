@@ -1,6 +1,6 @@
 package com.example.presentation.router
 
-import com.example.presentation.auth.currentProfileId
+import com.example.presentation.auth.currentUserId
 import com.example.presentation.controller.AuthController
 import com.example.presentation.error.conflict
 import com.example.presentation.error.badRequest
@@ -56,7 +56,7 @@ fun Route.authRouter(authController: AuthController) {
 
         authenticate("auth-jwt") {
             post("/logout") {
-                authController.logout(call.currentProfileId())
+                authController.logout(call.currentUserId())
 
                 call.respond(HttpStatusCode.NoContent)
             }

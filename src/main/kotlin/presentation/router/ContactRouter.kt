@@ -1,6 +1,6 @@
 package com.example.presentation.router
 
-import com.example.presentation.auth.currentProfileId
+import com.example.presentation.auth.currentUserId
 import com.example.presentation.controller.ContactController
 import com.example.presentation.error.badRequest
 import com.example.presentation.error.notFound
@@ -19,14 +19,14 @@ import io.ktor.server.routing.route
 fun Route.contactRouter(contactController: ContactController) {
     route("/contacts") {
         get {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val query = call.request.queryParameters["q"]
 
             call.respond(contactController.getContacts(profileId, query))
         }
 
         get("/{contactId}") {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
                 ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
             val contact = contactController.getContact(profileId, contactId)
@@ -36,14 +36,14 @@ fun Route.contactRouter(contactController: ContactController) {
         }
 
         post {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val request = call.receive<CreateContactRequest>()
 
             call.respond(HttpStatusCode.Created, contactController.createContact(profileId, request))
         }
 
         patch("/{contactId}") {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
                 ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
             val request = call.receive<UpdateContactRequest>()
@@ -54,7 +54,7 @@ fun Route.contactRouter(contactController: ContactController) {
         }
 
         delete("/{contactId}") {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
                 ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
 
@@ -66,7 +66,7 @@ fun Route.contactRouter(contactController: ContactController) {
         }
 
         post("/{contactId}/chat") {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val contactId = call.parameters["contactId"]?.toLongOrNull()
                 ?: badRequest("INVALID_CONTACT_ID", "Invalid contactId")
             val chat = contactController.getOrCreateChat(profileId, contactId)

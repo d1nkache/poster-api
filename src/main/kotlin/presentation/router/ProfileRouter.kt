@@ -1,6 +1,6 @@
 package com.example.presentation.router
 
-import com.example.presentation.auth.currentProfileId
+import com.example.presentation.auth.currentUserId
 import com.example.presentation.controller.ProfileController
 import com.example.presentation.error.badRequest
 import com.example.presentation.request.UpdateProfileRequest
@@ -16,13 +16,13 @@ import io.ktor.server.routing.route
 fun Route.profileRouter(profileController: ProfileController) {
     route("/profile") {
         get("/me") {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
 
             call.respond(profileController.getProfile(profileId))
         }
 
         patch("/me") {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val request = call.receive<UpdateProfileRequest>()
 
             call.respond(profileController.updateProfile(profileId, request))
@@ -36,7 +36,7 @@ fun Route.profileRouter(profileController: ProfileController) {
         }
 
         post("/avatar") {
-            val profileId = call.currentProfileId()
+            val profileId = call.currentUserId()
             val avatar = call.receiveProfileAvatar()
 
             call.respond(profileController.uploadProfileAvatar(profileId, avatar))

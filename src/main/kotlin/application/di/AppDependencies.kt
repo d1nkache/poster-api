@@ -4,6 +4,7 @@ import com.example.data.dao.ChatDao
 import com.example.data.dao.ContactDao
 import com.example.data.dao.MailOutboxDao
 import com.example.data.dao.MessageDao
+import com.example.data.dao.OtpOutboxDao
 import com.example.data.dao.ProfileDao
 import com.example.data.dao.SettingsDao
 import com.example.data.repository.AuthRepositoryImpl
@@ -12,8 +13,8 @@ import com.example.data.repository.ContactRepositoryImpl
 import com.example.data.repository.MessageRepositoryImpl
 import com.example.data.repository.ProfileRepositoryImpl
 import com.example.data.repository.SettingsRepositoryImpl
+import com.example.data.service.QueuedOtpSender
 import com.example.domain.service.JwtService
-import com.example.domain.service.LoggingOtpSender
 import com.example.domain.service.OtpService
 import com.example.domain.service.PasswordHasher
 import com.example.domain.usecase.auth.LoginUseCase
@@ -54,6 +55,7 @@ class AppDependencies {
     private val chatDao = ChatDao()
     private val messageDao = MessageDao()
     private val mailOutboxDao = MailOutboxDao()
+    private val otpOutboxDao = OtpOutboxDao()
     private val passwordHasher = PasswordHasher()
     private val jwtService = JwtService()
 
@@ -61,7 +63,7 @@ class AppDependencies {
         profileDao = profileDao,
         passwordHasher = passwordHasher,
         otpService = OtpService(passwordHasher),
-        otpSender = LoggingOtpSender(),
+        otpSender = QueuedOtpSender(otpOutboxDao),
         jwtService = jwtService
     )
     private val profileRepository = ProfileRepositoryImpl(profileDao = profileDao)
