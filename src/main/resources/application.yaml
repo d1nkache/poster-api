@@ -3,14 +3,7 @@ ktor:
     port: 8080
   application:
     modules:
-      - com.example.HttpKt.configureHttp
-      - com.example.SerializationKt.configureSerialization
-      - com.example.SecurityKt.configureSecurity
-      - com.example.DatabaseKt.configureDatabase
-      - com.example.StatusPagesKt.configureStatusPages
-      - com.example.WebsocketsKt.configureWebsockets
-      - com.example.ResourcesKt.configureResources
-      - com.example.RoutingKt.configureRouting
+      - com.example.ApplicationKt.configure
 
 database:
   jdbcUrl: "jdbc:postgresql://localhost:5432/posterDb"
