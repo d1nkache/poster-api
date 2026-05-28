@@ -10,7 +10,7 @@ import kotlinx.coroutines.runBlocking
 
 fun main() {
     runBlocking {
-        val config = WorkerConfig.fromEnvironment()
+        val config = WorkerConfig.fromResources()
         config.authMail.validate()
         WorkerDatabase.connect(config.database)
 

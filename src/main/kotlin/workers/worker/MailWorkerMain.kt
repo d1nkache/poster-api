@@ -26,7 +26,7 @@ import kotlinx.coroutines.runBlocking
 
 fun main() {
     runBlocking {
-        val config = WorkerConfig.fromEnvironment()
+        val config = WorkerConfig.fromResources()
         WorkerDatabase.connect(config.database)
 
         val profileDao = ProfileDao()

@@ -10,25 +10,6 @@ import io.ktor.server.request.receiveMultipart
 import io.ktor.utils.io.readRemaining
 import kotlinx.io.readByteArray
 
-
-
-/*
-ПРИМЕР заголовков multipart запроса:
-
-POST /profile/avatar HTTP/1.1
-Host: localhost:8080
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Length: 45230
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="avatar"; filename="my_photo.png"
-Content-Type: image/png
-
-PNG
-IHDR        IDATx^ݵ	%G `I `I `I `I `I `I `
-*/
-
 suspend fun ApplicationCall.receiveProfileAvatar(): ToUpload {
     var avatar: ToUpload? = null
 

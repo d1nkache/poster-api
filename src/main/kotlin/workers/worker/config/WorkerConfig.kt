@@ -1,5 +1,8 @@
 package com.example.workers.worker.config
 
+import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.config.yaml.YamlConfig
+
 data class WorkerConfig(
     val database: DatabaseConfig,
     val outboxBatchSize: Int,
@@ -11,16 +14,18 @@ data class WorkerConfig(
     val authMail: AuthMailConfig
 ) {
     companion object {
-        fun fromEnvironment(): WorkerConfig {
+        fun fromResources(path: String? = null): WorkerConfig {
+            val config = YamlConfig(path) ?: error("application.yaml was not found")
+
             return WorkerConfig(
-                database = DatabaseConfig.fromEnvironment(),
-                outboxBatchSize = envInt("WORKER_OUTBOX_BATCH_SIZE", 25),
-                outboxDelayMs = envLong("WORKER_OUTBOX_DELAY_MS", 5_000),
-                otpBatchSize = envInt("WORKER_OTP_BATCH_SIZE", 25),
-                otpDelayMs = envLong("WORKER_OTP_DELAY_MS", 5_000),
-                imapDelayMs = envLong("WORKER_IMAP_DELAY_MS", 30_000),
-                mail = MailDefaults.fromEnvironment(),
-                authMail = AuthMailConfig.fromEnvironment()
+                database = DatabaseConfig.fromConfig(config),
+                outboxBatchSize = config.int("worker.outboxBatchSize", 25),
+                outboxDelayMs = config.long("worker.outboxDelayMs", 5_000),
+                otpBatchSize = config.int("worker.otpBatchSize", 25),
+                otpDelayMs = config.long("worker.otpDelayMs", 5_000),
+                imapDelayMs = config.long("worker.imapDelayMs", 30_000),
+                mail = MailDefaults.fromConfig(config),
+                authMail = AuthMailConfig.fromConfig(config)
             )
         }
     }
@@ -34,13 +39,13 @@ data class DatabaseConfig(
     val maximumPoolSize: Int
 ) {
     companion object {
-        fun fromEnvironment(): DatabaseConfig {
+        fun fromConfig(config: ApplicationConfig): DatabaseConfig {
             return DatabaseConfig(
-                jdbcUrl = env("POSTER_DB_JDBC_URL", "jdbc:postgresql://localhost:5432/posterDb"),
-                driverClassName = env("POSTER_DB_DRIVER", "org.postgresql.Driver"),
-                username = env("POSTER_DB_USERNAME", "postgres"),
-                password = env("POSTER_DB_PASSWORD", "postgres"),
-                maximumPoolSize = envInt("POSTER_DB_MAX_POOL_SIZE", 5)
+                jdbcUrl = config.string("database.jdbcUrl", "jdbc:postgresql://localhost:5432/posterDb"),
+                driverClassName = config.string("database.driverClassName", "org.postgresql.Driver"),
+                username = config.string("database.username", "postgres"),
+                password = config.string("database.password", "postgres"),
+                maximumPoolSize = config.int("database.maximumPoolSize", 5)
             )
         }
     }
@@ -53,12 +58,12 @@ data class MailDefaults(
     val imapPort: Int?
 ) {
     companion object {
-        fun fromEnvironment(): MailDefaults {
+        fun fromConfig(config: ApplicationConfig): MailDefaults {
             return MailDefaults(
-                smtpHost = System.getenv("POSTER_SMTP_HOST"),
-                smtpPort = System.getenv("POSTER_SMTP_PORT")?.toIntOrNull(),
-                imapHost = System.getenv("POSTER_IMAP_HOST"),
-                imapPort = System.getenv("POSTER_IMAP_PORT")?.toIntOrNull()
+                smtpHost = config.optionalString("mail.defaults.smtpHost"),
+                smtpPort = config.optionalInt("mail.defaults.smtpPort"),
+                imapHost = config.optionalString("mail.defaults.imapHost"),
+                imapPort = config.optionalInt("mail.defaults.imapPort")
             )
         }
     }
@@ -72,34 +77,44 @@ data class AuthMailConfig(
     val smtpPort: Int
 ) {
     companion object {
-        fun fromEnvironment(): AuthMailConfig {
-            val username = env("POSTER_AUTH_SMTP_USERNAME", "")
+        fun fromConfig(config: ApplicationConfig): AuthMailConfig {
+            val username = config.string("mail.auth.username", "")
+            val fromEmail = config.string("mail.auth.fromEmail", "")
+
             return AuthMailConfig(
-                fromEmail = env("POSTER_AUTH_SMTP_FROM", username),
+                fromEmail = fromEmail.ifBlank { username },
                 username = username,
-                password = env("POSTER_AUTH_SMTP_PASSWORD", ""),
-                smtpHost = env("POSTER_AUTH_SMTP_HOST", ""),
-                smtpPort = envInt("POSTER_AUTH_SMTP_PORT", 587)
+                password = config.string("mail.auth.password", ""),
+                smtpHost = config.string("mail.auth.smtpHost", ""),
+                smtpPort = config.int("mail.auth.smtpPort", 587)
             )
         }
     }
 
     fun validate() {
-        require(fromEmail.isNotBlank()) { "POSTER_AUTH_SMTP_FROM or POSTER_AUTH_SMTP_USERNAME is required" }
-        require(username.isNotBlank()) { "POSTER_AUTH_SMTP_USERNAME is required" }
-        require(password.isNotBlank()) { "POSTER_AUTH_SMTP_PASSWORD is required" }
-        require(smtpHost.isNotBlank()) { "POSTER_AUTH_SMTP_HOST is required" }
+        require(fromEmail.isNotBlank()) { "mail.auth.fromEmail or mail.auth.username is required" }
+        require(username.isNotBlank()) { "mail.auth.username is required" }
+        require(password.isNotBlank()) { "mail.auth.password is required" }
+        require(smtpHost.isNotBlank()) { "mail.auth.smtpHost is required" }
     }
 }
 
-private fun env(name: String, default: String): String {
-    return System.getenv(name)?.takeIf { it.isNotBlank() } ?: default
+private fun ApplicationConfig.string(path: String, default: String): String {
+    return propertyOrNull(path)?.getString() ?: default
 }
 
-private fun envInt(name: String, default: Int): Int {
-    return System.getenv(name)?.toIntOrNull() ?: default
+private fun ApplicationConfig.optionalString(path: String): String? {
+    return propertyOrNull(path)?.getString()?.takeIf { it.isNotBlank() }
 }
 
-private fun envLong(name: String, default: Long): Long {
-    return System.getenv(name)?.toLongOrNull() ?: default
+private fun ApplicationConfig.int(path: String, default: Int): Int {
+    return propertyOrNull(path)?.getString()?.toIntOrNull() ?: default
+}
+
+private fun ApplicationConfig.optionalInt(path: String): Int? {
+    return propertyOrNull(path)?.getString()?.toIntOrNull()
+}
+
+private fun ApplicationConfig.long(path: String, default: Long): Long {
+    return propertyOrNull(path)?.getString()?.toLongOrNull() ?: default
 }
