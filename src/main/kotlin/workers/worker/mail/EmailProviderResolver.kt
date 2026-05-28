@@ -1,12 +1,9 @@
 package com.example.workers.worker.mail
 
-import com.example.workers.worker.config.MailDefaults
 import com.example.domain.model.MailConnectionSettings
 import com.example.domain.service.MailConnectionDefaults
 
-class EmailProviderResolver(
-    private val defaults: MailDefaults
-) {
+class EmailProviderResolver {
     fun resolve(
         email: String,
         accessToken: String,
@@ -29,10 +26,10 @@ class EmailProviderResolver(
         return MailServerSettings(
             email = email,
             accessToken = accessToken,
-            smtpHost = resolved.smtpHost ?: defaults.smtpHost ?: error("SMTP host is not configured"),
-            smtpPort = resolved.smtpPort ?: defaults.smtpPort ?: 587,
-            imapHost = resolved.imapHost ?: defaults.imapHost ?: error("IMAP host is not configured"),
-            imapPort = resolved.imapPort ?: defaults.imapPort ?: 993
+            smtpHost = resolved.smtpHost ?: error("SMTP host is not configured for $email"),
+            smtpPort = resolved.smtpPort ?: 587,
+            imapHost = resolved.imapHost ?: error("IMAP host is not configured for $email"),
+            imapPort = resolved.imapPort ?: 993
         )
     }
 }

@@ -35,7 +35,7 @@ fun main() {
         val chatDao = ChatDao()
         val messageDao = MessageDao()
         val mailOutboxDao = MailOutboxDao()
-        val providerResolver = EmailProviderResolver(config.mail)
+        val providerResolver = EmailProviderResolver()
         val tokenCipher = PlainTextMailTokenCipher()
 
         val outboxSender = OutboxSender(

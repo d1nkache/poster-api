@@ -15,23 +15,17 @@ database:
 
 worker:
   # Интервалы и размеры пачек для фоновых процессов.
-  outboxBatchSize: 25
-  outboxDelayMs: 5000
-  otpBatchSize: 25
-  otpDelayMs: 5000
-  imapDelayMs: 30000
+  outboxBatchSize: 50
+  outboxDelayMs: 1000
+  otpBatchSize: 50
+  otpDelayMs: 1000
+  imapDelayMs: 5000
 
 mail:
-  # defaults используются для пользовательской почты, если настройки не заданы в БД.
-  defaults:
-    smtpHost: "$?POSTER_SMTP_HOST"
-    smtpPort: "$?POSTER_SMTP_PORT"
-    imapHost: "$?POSTER_IMAP_HOST"
-    imapPort: "$?POSTER_IMAP_PORT"
   auth:
     # Наша системная SMTP-почта для отправки OTP при регистрации.
     fromEmail: "$POSTER_AUTH_SMTP_FROM:"
     username: "$POSTER_AUTH_SMTP_USERNAME:"
-    password: "$POSTER_AUTH_SMTP_PASSWORD:"
+    accessToken: "$POSTER_AUTH_SMTP_ACCESS_TOKEN:"
     smtpHost: "$POSTER_AUTH_SMTP_HOST:"
     smtpPort: "$POSTER_AUTH_SMTP_PORT:587"

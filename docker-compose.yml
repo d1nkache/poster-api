@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: poster-postgres
+    environment:
+      POSTGRES_DB: posterDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - poster-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d posterDb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: poster-api
+    command: ["api"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTER_DB_JDBC_URL: jdbc:postgresql://postgres:5432/posterDb
+      POSTER_DB_USERNAME: postgres
+      POSTER_DB_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+
+  mail-worker:
+    build: .
+    container_name: poster-mail-worker
+    command: ["mail-worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTER_DB_JDBC_URL: jdbc:postgresql://postgres:5432/posterDb
+      POSTER_DB_USERNAME: postgres
+      POSTER_DB_PASSWORD: postgres
+
+  otp-worker:
+    build: .
+    container_name: poster-otp-worker
+    command: ["otp-worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTER_DB_JDBC_URL: jdbc:postgresql://postgres:5432/posterDb
+      POSTER_DB_USERNAME: postgres
+      POSTER_DB_PASSWORD: postgres
+      POSTER_AUTH_SMTP_FROM: ${POSTER_AUTH_SMTP_FROM:-}
+      POSTER_AUTH_SMTP_USERNAME: ${POSTER_AUTH_SMTP_USERNAME:-}
+      POSTER_AUTH_SMTP_ACCESS_TOKEN: ${POSTER_AUTH_SMTP_ACCESS_TOKEN:-}
+      POSTER_AUTH_SMTP_HOST: ${POSTER_AUTH_SMTP_HOST:-}
+      POSTER_AUTH_SMTP_PORT: ${POSTER_AUTH_SMTP_PORT:-587}
+
+volumes:
+  poster-postgres-data:

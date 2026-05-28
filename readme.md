@@ -821,15 +821,40 @@ mail:
   auth:
     fromEmail: "noreply@example.com"
     username: "noreply@example.com"
-    password: "app-password"
+    accessToken: "smtp-access-token"
     smtpHost: "smtp.example.com"
     smtpPort: 587
 ```
 
-Пароль лучше передавать через env:
+Токен доступа лучше передавать через env:
 
 ```yaml
-password: "$POSTER_AUTH_SMTP_PASSWORD:"
+accessToken: "$POSTER_AUTH_SMTP_ACCESS_TOKEN:"
+```
+
+## Docker Compose
+
+Compose поднимает PostgreSQL, API и два фоновых процесса:
+
+```bash
+docker compose up --build
+```
+
+Сервисы:
+
+- `postgres` - база `posterDb` на порту `5432`.
+- `api` - Ktor API на порту `8080`.
+- `mail-worker` - отправка исходящих сообщений и IMAP sync.
+- `otp-worker` - отправка OTP-кодов для регистрации.
+
+Для OTP worker перед запуском задайте SMTP-переменные:
+
+```powershell
+$env:POSTER_AUTH_SMTP_FROM = "noreply@example.com"
+$env:POSTER_AUTH_SMTP_USERNAME = "noreply@example.com"
+$env:POSTER_AUTH_SMTP_ACCESS_TOKEN = "smtp-access-token"
+$env:POSTER_AUTH_SMTP_HOST = "smtp.example.com"
+$env:POSTER_AUTH_SMTP_PORT = "587"
 ```
 
 ## Minimal Integration Checklist

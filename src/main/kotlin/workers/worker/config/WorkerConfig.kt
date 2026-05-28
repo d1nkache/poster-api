@@ -10,7 +10,6 @@ data class WorkerConfig(
     val otpBatchSize: Int,
     val otpDelayMs: Long,
     val imapDelayMs: Long,
-    val mail: MailDefaults,
     val authMail: AuthMailConfig
 ) {
     companion object {
@@ -24,7 +23,6 @@ data class WorkerConfig(
                 otpBatchSize = config.int("worker.otpBatchSize", 25),
                 otpDelayMs = config.long("worker.otpDelayMs", 5_000),
                 imapDelayMs = config.long("worker.imapDelayMs", 30_000),
-                mail = MailDefaults.fromConfig(config),
                 authMail = AuthMailConfig.fromConfig(config)
             )
         }
@@ -51,28 +49,10 @@ data class DatabaseConfig(
     }
 }
 
-data class MailDefaults(
-    val smtpHost: String?,
-    val smtpPort: Int?,
-    val imapHost: String?,
-    val imapPort: Int?
-) {
-    companion object {
-        fun fromConfig(config: ApplicationConfig): MailDefaults {
-            return MailDefaults(
-                smtpHost = config.optionalString("mail.defaults.smtpHost"),
-                smtpPort = config.optionalInt("mail.defaults.smtpPort"),
-                imapHost = config.optionalString("mail.defaults.imapHost"),
-                imapPort = config.optionalInt("mail.defaults.imapPort")
-            )
-        }
-    }
-}
-
 data class AuthMailConfig(
     val fromEmail: String,
     val username: String,
-    val password: String,
+    val accessToken: String,
     val smtpHost: String,
     val smtpPort: Int
 ) {
@@ -84,7 +64,7 @@ data class AuthMailConfig(
             return AuthMailConfig(
                 fromEmail = fromEmail.ifBlank { username },
                 username = username,
-                password = config.string("mail.auth.password", ""),
+                accessToken = config.string("mail.auth.accessToken", ""),
                 smtpHost = config.string("mail.auth.smtpHost", ""),
                 smtpPort = config.int("mail.auth.smtpPort", 587)
             )
@@ -94,7 +74,7 @@ data class AuthMailConfig(
     fun validate() {
         require(fromEmail.isNotBlank()) { "mail.auth.fromEmail or mail.auth.username is required" }
         require(username.isNotBlank()) { "mail.auth.username is required" }
-        require(password.isNotBlank()) { "mail.auth.password is required" }
+        require(accessToken.isNotBlank()) { "mail.auth.accessToken is required" }
         require(smtpHost.isNotBlank()) { "mail.auth.smtpHost is required" }
     }
 }
@@ -103,16 +83,8 @@ private fun ApplicationConfig.string(path: String, default: String): String {
     return propertyOrNull(path)?.getString() ?: default
 }
 
-private fun ApplicationConfig.optionalString(path: String): String? {
-    return propertyOrNull(path)?.getString()?.takeIf { it.isNotBlank() }
-}
-
 private fun ApplicationConfig.int(path: String, default: Int): Int {
     return propertyOrNull(path)?.getString()?.toIntOrNull() ?: default
-}
-
-private fun ApplicationConfig.optionalInt(path: String): Int? {
-    return propertyOrNull(path)?.getString()?.toIntOrNull()
 }
 
 private fun ApplicationConfig.long(path: String, default: Long): Long {

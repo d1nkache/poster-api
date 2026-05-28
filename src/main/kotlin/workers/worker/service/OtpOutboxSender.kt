@@ -35,7 +35,7 @@ class OtpOutboxSender(
                 smtpMailClient.send(
                     settings = MailServerSettings(
                         email = authMailConfig.username,
-                        accessToken = authMailConfig.password,
+                        accessToken = authMailConfig.accessToken,
                         smtpHost = authMailConfig.smtpHost,
                         smtpPort = authMailConfig.smtpPort,
                         imapHost = authMailConfig.smtpHost,
